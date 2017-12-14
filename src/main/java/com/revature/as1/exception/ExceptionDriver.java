@@ -17,13 +17,9 @@ public class ExceptionDriver {
 	}
 	
 	public static void exceptionalMethod() throws RevatureException{
-		try {
 			System.out.println("Ducking this bizzare exception!");
-			System.exit(0);
-			throw(new RevatureException());
-		}finally {
-			System.out.println("That was close.");
-		}
+			System.exit(0); //Exception never actually thrown, because this method is a trap. Pedagogical examples get weird sometimes
+			throw (new RevatureException());
 	}
 
 }
