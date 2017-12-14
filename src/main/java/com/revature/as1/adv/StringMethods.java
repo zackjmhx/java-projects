@@ -18,24 +18,24 @@ public class StringMethods {
 			return sb.toString();
 		}
 	}
-	
-	public static String reverseString(String in) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
-		char[] chars = null;
-		//try {
-			Field value = String.class.getDeclaredField("value");
-			value.setAccessible(true);
-			
-			chars = (char[])value.get(in);
-			
-			for(int i = 0; i < chars.length/2; i++) {
-				chars[i] ^= chars[chars.length-1-i];
-				chars[chars.length-1-i] ^= chars[i];
-				chars[i] ^= chars[chars.length-1-i];
-			}
-	//	}catch(Exception e) {
-		//	System.out.println(e.getMessage());
-		//}
+
+	public static String reverseString(String in) {
 		
+		char[] chars = new char[in.length()];
+		
+		for(int i = 0; i < in.length(); i++) {
+			chars[i] = in.charAt(i);
+		}
+
+		for (int i = 0; i < chars.length / 2; i++) {
+			chars[i] ^= chars[chars.length - 1 - i];
+			chars[chars.length - 1 - i] ^= chars[i];
+			chars[i] ^= chars[chars.length - 1 - i];
+		}
+		// }catch(Exception e) {
+		// System.out.println(e.getMessage());
+		// }
+
 		return new String(chars);
 	}
 

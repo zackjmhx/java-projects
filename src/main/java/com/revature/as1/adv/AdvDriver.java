@@ -4,7 +4,7 @@ import java.util.Calendar;
 
 public class AdvDriver {
 	
-	public static void main(String[] args) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+	public static void main(String[] args) {
 		/*
 		String s = "abcdbebfgb";
 		
@@ -49,7 +49,7 @@ public class AdvDriver {
 		
 		System.out.println("Is " + in + " a prime number? " + (PrimeChecker.primeCheck(in) ? "Yes" : "No"));
 		
-		String rev = "This is a string to be reversed.";
+		String rev = "A dog, a plan, a canal: pagoda.";
 		
 		System.out.println(StringMethods.reverseString(rev));
 
