@@ -1,3 +1,3 @@
 # java-projects
 
-Pedigogical Java projects.
+Pedagogical Java projects.
