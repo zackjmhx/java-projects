@@ -1,3 +1,3 @@
 # java-projects
 
-Pedagogical Java projects.
+Simple Java projects demonstrating basic language features.
