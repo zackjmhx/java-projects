@@ -1,0 +1,10 @@
+﻿TriangleBasicsApp.obj : error LNK2019: unresolved external symbol _glfwInit referenced in function "private: void __thiscall TriangleBasicsApp::initWindow(void)" (?initWindow@TriangleBasicsApp@@AAEXXZ)
+TriangleBasicsApp.obj : error LNK2019: unresolved external symbol _glfwTerminate referenced in function "private: void __thiscall TriangleBasicsApp::cleanup(void)" (?cleanup@TriangleBasicsApp@@AAEXXZ)
+TriangleBasicsApp.obj : error LNK2019: unresolved external symbol _glfwWindowHint referenced in function "private: void __thiscall TriangleBasicsApp::initWindow(void)" (?initWindow@TriangleBasicsApp@@AAEXXZ)
+TriangleBasicsApp.obj : error LNK2019: unresolved external symbol _glfwCreateWindow referenced in function "private: void __thiscall TriangleBasicsApp::initWindow(void)" (?initWindow@TriangleBasicsApp@@AAEXXZ)
+TriangleBasicsApp.obj : error LNK2019: unresolved external symbol _glfwDestroyWindow referenced in function "private: void __thiscall TriangleBasicsApp::cleanup(void)" (?cleanup@TriangleBasicsApp@@AAEXXZ)
+TriangleBasicsApp.obj : error LNK2019: unresolved external symbol _glfwWindowShouldClose referenced in function "private: void __thiscall TriangleBasicsApp::mainLoop(void)" (?mainLoop@TriangleBasicsApp@@AAEXXZ)
+TriangleBasicsApp.obj : error LNK2019: unresolved external symbol _glfwPollEvents referenced in function "private: void __thiscall TriangleBasicsApp::mainLoop(void)" (?mainLoop@TriangleBasicsApp@@AAEXXZ)
+E:\VulkanSDK\1.0.65.1\Lib\vulkan-1.lib : warning LNK4272: library machine type 'x64' conflicts with target machine type 'X86'
+E:\Libraries\glfw-3.2.1.bin.WIN64\lib-vc2015\glfw3.lib : warning LNK4272: library machine type 'x64' conflicts with target machine type 'X86'
+E:\Projects\TriangleBasics\Debug\TriangleBasics.exe : fatal error LNK1120: 7 unresolved externals

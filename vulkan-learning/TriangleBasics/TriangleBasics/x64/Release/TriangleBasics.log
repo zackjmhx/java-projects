@@ -1,6 +1,9 @@
 ﻿  TriangleBasicsApp.cpp
+TriangleBasicsApp.cpp(621): warning C4838: conversion from 'int' to 'uint32_t' requires a narrowing conversion
   Generating code
-  All 248 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  1416 of 1416 functions (100.0%) were compiled, the rest were copied from previous compilation.
+    1220 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
-  TriangleBasics.vcxproj -> E:\Projects\TriangleBasics\x64\Release\TriangleBasics.exe
-  TriangleBasics.vcxproj -> E:\Projects\TriangleBasics\x64\Release\TriangleBasics.pdb (Full PDB)
+  TriangleBasics.vcxproj -> E:\GitHub\learning-projects\vulkan-learning\TriangleBasics\x64\Release\TriangleBasics.exe
+  TriangleBasics.vcxproj -> E:\GitHub\learning-projects\vulkan-learning\TriangleBasics\x64\Release\TriangleBasics.pdb (Full PDB)

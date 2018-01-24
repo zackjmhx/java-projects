@@ -1,0 +1,6 @@
+﻿  TriangleBasicsApp.cpp
+e:\github\learning-projects\vulkan-learning\trianglebasics\trianglebasics\trianglebasicsapp.cpp(621): warning C4838: conversion from 'int' to 'uint32_t' requires a narrowing conversion
+  LINK : E:\GitHub\learning-projects\vulkan-learning\TriangleBasics\x64\Debug\TriangleBasics.exe not found or not built by the last incremental link; performing full link
+LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
+  TriangleBasics.vcxproj -> E:\GitHub\learning-projects\vulkan-learning\TriangleBasics\x64\Debug\TriangleBasics.exe
+  TriangleBasics.vcxproj -> E:\GitHub\learning-projects\vulkan-learning\TriangleBasics\x64\Debug\TriangleBasics.pdb (Full PDB)
