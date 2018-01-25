@@ -963,27 +963,45 @@ private:
 
 		stbi_image_free(pixels); //free the host image memory
 
+		createImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, 
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, texImage, texImageMem);
+
+
+	}
+
+	void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) {
 		VkImageCreateInfo imageInfo = {};
 		imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 		imageInfo.imageType = VK_IMAGE_TYPE_2D; //texel coordinate system
-		imageInfo.extent.width = static_cast<uint32_t>(texWidth); //width of the image
-		imageInfo.extent.height = static_cast<uint32_t>(texHeight); //height of the image
+		imageInfo.extent.width = width; //width of the image
+		imageInfo.extent.height = height; //height of the image
 		imageInfo.extent.depth = 1; //no depth on a 2d image but still has one "row"
 		imageInfo.mipLevels = 1; //not an array of textures
 		imageInfo.arrayLayers = 1; //only one image layer
-		imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL; //using a staging buffer so we don't need texel access
+		imageInfo.tiling = tiling; //using a staging buffer so we don't need texel access
+		imageInfo.format = format; //texel format
 		imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; //we don't need to preserve any initial texel data
 		imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT; //the image is going to recieve data from our staging buffer and we need access to the image from the shader
 		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE; //the graphics queue implicitly supports memory transfers so only one queue will use this image
 		imageInfo.samples = VK_SAMPLE_COUNT_1_BIT; //No multisampling
 		imageInfo.flags = 0; //No flags for now - optional
 
-		if (vkCreateImage(device, &imageInfo, nullptr, &texImage) != VK_SUCCESS) //crash if we don't create an image
+		if (vkCreateImage(device, &imageInfo, nullptr, &image) != VK_SUCCESS) //crash if we don't create an image
 			throw std::runtime_error("Failed to create image");
 
+		VkMemoryRequirements memReqs;
+		vkGetImageMemoryRequirements(device, image, &memReqs); //query our texture image for its memory requirements
 
+		VkMemoryAllocateInfo allocInfo = {};
+		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+		allocInfo.allocationSize = memReqs.size; //set the ammount of memory to allocate to the ammount we need
+		allocInfo.memoryTypeIndex = findMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT); //find memory with the properties we need, ensure it's device local
+
+		if (vkAllocateMemory(device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) //crash if we dont get our memory
+			throw std::runtime_error("Failed to allocate image memory");
+
+		vkBindImageMemory(device, image, imageMemory, 0); //bind our image to the allocated memory
 	}
-
 
 	void createVertexBuffer() {
 		VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
