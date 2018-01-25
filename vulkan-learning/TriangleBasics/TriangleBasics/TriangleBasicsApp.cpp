@@ -57,7 +57,7 @@ static std::vector<char> readFile(const std::string &filename) {
 	file.close(); //close the file
 	
 #ifndef NDEBUG
-	std::cout << fileSize << std::endl; //debug check file size
+	std::cout << "File size of " << fileSize << std::endl; //debug check file size
 #endif // !NDEBUG
 
 	
@@ -185,6 +185,9 @@ private:
 	VkBuffer uniformBuffer;
 	VkDeviceMemory uniformBufferMemory;
 
+	VkImage texImage; //image object to hold texture texels - -
+	VkDeviceMemory texImageMem; //device memory to hold our image object - -
+
 	VkCommandPool commandPool;
 	VkDescriptorPool desPool;
 	VkDescriptorSet desSet;
@@ -249,6 +252,8 @@ private:
 		createFrameBuffer();
 
 		createCommandPool();
+
+		createTextureImage(); //load texture image into device memory
 
 		createVertexBuffer();
 		
@@ -934,6 +939,28 @@ private:
 
 		if (vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS)
 			throw std::runtime_error("Failed to create command pool.");
+	}
+
+	void createTextureImage() {
+		int texWidth, texHeight, texChannels;
+		stbi_uc *pixels = stbi_load("textures/texture.jpg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+
+		VkDeviceSize imageSize = texWidth * texHeight * 4;
+
+		if (!pixels)
+			throw std::runtime_error("Failed to load texture image");
+
+		VkBuffer stageBuff;
+		VkDeviceMemory stageBuffMem;
+
+		createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stageBuff, stageBuffMem);
+
+		void *data;
+		vkMapMemory(device, stageBuffMem, 0, imageSize, 0, &data);
+		memcpy(data, pixels, static_cast<size_t>(imageSize));
+		vkUnmapMemory(device, stageBuffMem);
+
+		stbi_image_free(pixels);
 	}
 
 
