@@ -942,25 +942,46 @@ private:
 	}
 
 	void createTextureImage() {
-		int texWidth, texHeight, texChannels;
-		stbi_uc *pixels = stbi_load("textures/texture.jpg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+		int texWidth, texHeight, texChannels; //vars to hold image data
+		stbi_uc *pixels = stbi_load("textures/texture.jpg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha); //load the pixel data and force alpha channel even if missing
 
-		VkDeviceSize imageSize = texWidth * texHeight * 4;
+		VkDeviceSize imageSize = texWidth * texHeight * 4; //pixel count * number of bytes
 
-		if (!pixels)
+		if (!pixels) //we have no image if this goes off
 			throw std::runtime_error("Failed to load texture image");
 
-		VkBuffer stageBuff;
-		VkDeviceMemory stageBuffMem;
+		VkBuffer stageBuff; //staging buffer for the pixels
+		VkDeviceMemory stageBuffMem; //buffer device memory
 
+		//create buffer on the divice with a transfer source memory layout, the host visible and coherent flags, and the buffer/memory to fill
 		createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stageBuff, stageBuffMem);
 
-		void *data;
-		vkMapMemory(device, stageBuffMem, 0, imageSize, 0, &data);
-		memcpy(data, pixels, static_cast<size_t>(imageSize));
-		vkUnmapMemory(device, stageBuffMem);
+		void *data; //void pointer for the trasfer
+		vkMapMemory(device, stageBuffMem, 0, imageSize, 0, &data); //map the buffer memory to our void pointer
+		memcpy(data, pixels, static_cast<size_t>(imageSize)); //copy the pixel data to the device
+		vkUnmapMemory(device, stageBuffMem); //unmap the memory
 
-		stbi_image_free(pixels);
+		stbi_image_free(pixels); //free the host image memory
+
+		VkImageCreateInfo imageInfo = {};
+		imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+		imageInfo.imageType = VK_IMAGE_TYPE_2D; //texel coordinate system
+		imageInfo.extent.width = static_cast<uint32_t>(texWidth); //width of the image
+		imageInfo.extent.height = static_cast<uint32_t>(texHeight); //height of the image
+		imageInfo.extent.depth = 1; //no depth on a 2d image but still has one "row"
+		imageInfo.mipLevels = 1; //not an array of textures
+		imageInfo.arrayLayers = 1; //only one image layer
+		imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL; //using a staging buffer so we don't need texel access
+		imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; //we don't need to preserve any initial texel data
+		imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT; //the image is going to recieve data from our staging buffer and we need access to the image from the shader
+		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE; //the graphics queue implicitly supports memory transfers so only one queue will use this image
+		imageInfo.samples = VK_SAMPLE_COUNT_1_BIT; //No multisampling
+		imageInfo.flags = 0; //No flags for now - optional
+
+		if (vkCreateImage(device, &imageInfo, nullptr, &texImage) != VK_SUCCESS) //crash if we don't create an image
+			throw std::runtime_error("Failed to create image");
+
+
 	}
 
 
@@ -1196,7 +1217,7 @@ private:
 
 	void mainLoop() {
 
-		auto timek = std::chrono::high_resolution_clock::now();
+		auto times = std::chrono::high_resolution_clock::now();
 		uint32_t frames = 0;
 
 		while (!glfwWindowShouldClose(window)) {
@@ -1208,10 +1229,10 @@ private:
 
 			frames++;
 
-			if (std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::high_resolution_clock::now() - timek).count() >= 1) {
+			if (std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::high_resolution_clock::now() - times).count() >= 1) {
 				std::cout << "Current FPS: " << frames << std::endl;
 				frames = 0;
-				timek = std::chrono::high_resolution_clock::now();
+				times = std::chrono::high_resolution_clock::now();
 			}
 		}
 
