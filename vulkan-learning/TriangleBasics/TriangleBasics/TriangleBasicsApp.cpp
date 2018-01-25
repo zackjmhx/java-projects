@@ -941,6 +941,7 @@ private:
 			throw std::runtime_error("Failed to create command pool.");
 	}
 
+
 	void createTextureImage() {
 		int texWidth, texHeight, texChannels; //vars to hold image data
 		stbi_uc *pixels = stbi_load("textures/texture.jpg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha); //load the pixel data and force alpha channel even if missing
@@ -1002,6 +1003,7 @@ private:
 
 		vkBindImageMemory(device, image, imageMemory, 0); //bind our image to the allocated memory
 	}
+
 
 	void createVertexBuffer() {
 		VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
@@ -1086,38 +1088,50 @@ private:
 	}
 
 	void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
+		VkCommandBuffer commandBuffer = beginSingleTimeCommands();
+
+		VkBufferCopy copyRegion = {};
+		copyRegion.srcOffset = 0; //Offset if data interlaced
+		copyRegion.dstOffset = 0; //Offset of destinaion if interlaced
+		copyRegion.size = size; //size of the memory region to copy
+		vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion); //record the copy command
+
+		endSingleTimeCommand(commandBuffer);
+	}
+
+	VkCommandBuffer beginSingleTimeCommands() {
 		VkCommandBufferAllocateInfo allocInfo = {};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandBufferCount = 1;
-		allocInfo.commandPool = commandPool;
+		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY; //primary or secondary buffer - right now only using primary command buffers
+		allocInfo.commandBufferCount = 1; //only one buffer at a time
+		allocInfo.commandPool = commandPool; //the command pool to allocate from - only the one command pool for now
 
 		VkCommandBuffer commandBuffer;
-		vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer);
+		vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer); //allocate the command buffer
 
 		VkCommandBufferBeginInfo beginInfo = {};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT; //signal that this buffer is one and done
 
-		vkBeginCommandBuffer(commandBuffer, &beginInfo);
-		VkBufferCopy copyRegion = {};
-		copyRegion.srcOffset = 0;
-		copyRegion.dstOffset = 0;
-		copyRegion.size = size;
-		vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+		vkBeginCommandBuffer(commandBuffer, &beginInfo); //begin recording the buffer
 
-		vkEndCommandBuffer(commandBuffer);
+		return commandBuffer;
+	}
+
+	void endSingleTimeCommand(VkCommandBuffer commandBuffer) {
+		vkEndCommandBuffer(commandBuffer); //stop recording the buffer
 
 		VkSubmitInfo submitInfo = {};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &commandBuffer;
+		submitInfo.commandBufferCount = 1; //only one at a time for now
+		submitInfo.pCommandBuffers = &commandBuffer; //the buffer
 
-		vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-		vkQueueWaitIdle(graphicsQueue);
+		vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE); //submit the buffer to the queue
+		vkQueueWaitIdle(graphicsQueue); //wait for it to finish
 
-		vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
+		vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer); //free the buffer
 	}
+
 
 	void createDescriptorPool() {
 		VkDescriptorPoolSize poolSize = {};
