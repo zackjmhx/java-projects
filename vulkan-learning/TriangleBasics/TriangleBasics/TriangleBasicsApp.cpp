@@ -973,6 +973,9 @@ private:
 
 		trasitionImageLayout(texImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL); //change from tranfer layout to shader read layout
 
+		vkDestroyBuffer(device, stageBuff, nullptr); //destroy the staging buffer
+		vkFreeMemory(device, stageBuffMem, nullptr); //free the buffers memory
+
 	}
 
 	void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) {
@@ -1439,7 +1442,10 @@ private:
 		vkDestroySemaphore(device, renderFinishedSemaphore, nullptr);
 		vkDestroySemaphore(device, imageAvailableSemaphore, nullptr);
 
-		cleanupSwapChain();
+		cleanupSwapChain(); //destroy swapchain components
+
+		vkDestroyImage(device, texImage, nullptr); //destroy texture image
+		vkFreeMemory(device, texImageMem, nullptr); //free the device memory
 
 		vkDestroyDescriptorSetLayout(device, desSetLayout, nullptr);
 
