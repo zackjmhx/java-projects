@@ -121,7 +121,7 @@ private:
 
 			attDes[0].binding = 0; //binding, must match appropriate VkVertexInputBindingDescription
 			attDes[0].location = 0; //location specified in shader for i-th data member - 0:0
-			attDes[0].format = VK_FORMAT_R32G32_SFLOAT; //specify data vector size using color flags - two 32 bit signed floats
+			attDes[0].format = VK_FORMAT_R32G32B32_SFLOAT; //specify data vector size using color flags - two 32 bit signed floats
 			attDes[0].offset = offsetof(Vertex, pos); //offset to find pos elements <^[pos][color][tex]><^[pos][color][tex]>...
 
 			attDes[1].binding = 0; //binding, must match appropriate VkVertexInputBindingDescription
@@ -221,7 +221,8 @@ private:
 	};
 
 	const std::vector<uint16_t> vIndicies = {
-		0, 1, 2, 2, 3, 0
+		0, 1, 2, 2, 3, 0,
+		4, 5, 6, 6, 7, 4
 	};
 
 
