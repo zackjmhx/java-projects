@@ -1301,18 +1301,33 @@ private:
 		bufferInfo.offset = 0;
 		bufferInfo.range = sizeof(UniformBufferObject);
 
-		VkWriteDescriptorSet desWrite = {};
-		desWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		desWrite.dstSet = desSet;
-		desWrite.dstBinding = 0;
-		desWrite.dstArrayElement = 0;
-		desWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		desWrite.descriptorCount = 1;
-		desWrite.pBufferInfo = &bufferInfo;
-		desWrite.pImageInfo = nullptr;
-		desWrite.pTexelBufferView = nullptr;
+		VkDescriptorImageInfo imageInfo = {};
+		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		imageInfo.imageView = texImgView;
+		imageInfo.sampler = texSampler;
 
-		vkUpdateDescriptorSets(device, 1, &desWrite, 0, nullptr);
+		std::array<VkWriteDescriptorSet, 2> desWrites = {};
+		desWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		desWrites[0].dstSet = desSet;
+		desWrites[0].dstBinding = 0;
+		desWrites[0].dstArrayElement = 0;
+		desWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		desWrites[0].descriptorCount = 1;
+		desWrites[0].pBufferInfo = &bufferInfo;
+		desWrites[0].pImageInfo = nullptr;
+		desWrites[0].pTexelBufferView = nullptr;
+
+		desWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		desWrites[1].dstSet = desSet;
+		desWrites[1].dstBinding = 1;
+		desWrites[1].dstArrayElement = 0;
+		desWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;;
+		desWrites[1].descriptorCount = 1;
+		desWrites[1].pBufferInfo = nullptr;
+		desWrites[1].pImageInfo = &imageInfo;
+		desWrites[1].pTexelBufferView = nullptr;
+
+		vkUpdateDescriptorSets(device, static_cast<uint32_t>(desWrites.size()), desWrites.data(), 0, nullptr);
 
 
 	}
