@@ -1,73 +1,79 @@
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW\glfw3.h>
+#define GLFW_INCLUDE_VULKAN //Turn on glfw vulkan support
+#include <GLFW\glfw3.h> //glfw header
 
-#include <iostream>
+#include <iostream> 
 #include <vector>
 #include <stdexcept>
 #include <functional>
 #include <set>
 #include <algorithm>
 #include <fstream>
-#include <ctime>
 
 #define GLM_FORCE_RADIANS
-#include <glm/glm.hpp>
+#include <glm/glm.hpp> //linear algebra library
 #include <glm/gtc/matrix_transform.hpp>
 #include <array>
 #include <chrono>
 
-const int WIDTH = 800;
-const int HEIGHT = 600;
+const int WIDTH = 800; //window initial width
+const int HEIGHT = 600; //window initial height
 
 VkResult CreateDebugReportCallbackEXT(VkInstance instance, const VkDebugReportCallbackCreateInfoEXT *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkDebugReportCallbackEXT *pCallback) {
-	auto func = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugReportCallbackEXT");
+	//wrapper function to call vkCreateDebugReportCallbackEXT since it's not loaded by default
+	auto func = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugReportCallbackEXT"); //get a pointer to the function
 
-	if (func != nullptr) {
-		return func(instance, pCreateInfo, pAllocator, pCallback);
+	if (func != nullptr) { //check that we succeded
+		return func(instance, pCreateInfo, pAllocator, pCallback); //call the function and pass through the parameters
 	} else {
 		return VK_ERROR_EXTENSION_NOT_PRESENT;
 	}
 }
 
 void DestroyDebugReportCallbackEXT(VkInstance instance, VkDebugReportCallbackEXT callback, const VkAllocationCallbacks *pAllocator) {
-	auto func = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT");
+	//wrapper function to call vkDestroyDebugReportCallbackEXT since it's not loaded by default
+	auto func = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT"); //get a pointer to the function
 
-	if (func != nullptr) {
-		func(instance, callback, pAllocator);
+	if (func != nullptr) { //check that we succeded
+		func(instance, callback, pAllocator); //call the function and pass through the parameters
 	}
 }
 
 static std::vector<char> readFile(const std::string &filename) {
+	//load a file into memory as binary data - open at the end
 	std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
-	if (!file.is_open())
+	if (!file.is_open()) //if we failed
 		throw std::runtime_error("Failed to open file " + filename);
 
-	size_t fileSize = (size_t)file.tellg();
-	std::vector<char> buffer(fileSize);
+	size_t fileSize = (size_t)file.tellg(); //get our current location in the file - at the end so this is our filesize
+	std::vector<char> buffer(fileSize); //buffer for the file
 
-	file.seekg(0);
-	file.read(buffer.data(), fileSize);
+	file.seekg(0); //go to the beggining
+	file.read(buffer.data(), fileSize); //read the entire file into the buffer
 
-	file.close();
+	file.close(); //close the file
+	
+#ifndef NDEBUG
+	std::cout << fileSize << std::endl; //debug check file size
+#endif // !NDEBUG
 
-	std::cout << fileSize << std::endl;
+	
 
 	return buffer;
 }
 
 const std::vector<const char*> validationLayers = {
 
-		"VK_LAYER_LUNARG_standard_validation"
+		"VK_LAYER_LUNARG_standard_validation" //use the standard lunarG validation layers
 
 };
 
 const std::vector<const char *> deviceExtentions = {
-	VK_KHR_SWAPCHAIN_EXTENSION_NAME
+	VK_KHR_SWAPCHAIN_EXTENSION_NAME //enable SwapChain extentions
 };
 
 #ifndef NDEBUG
-const bool enableValidationLayers = true;
+const bool enableValidationLayers = true; //enable validation layers iff we're in debug mode
 #else
 const bool enableValidationLayers = false;
 #endif // !NDEBUG
@@ -77,90 +83,94 @@ class TriangleBasicsApp {
 
 public:
 	void run() {
-		initWindow();
-		initVulkan();
-		mainLoop();
-		cleanup();
+		initWindow(); //call glfw setup functions to open window
+		initVulkan(); //something like 900 lines of data entry, a function call every so often to mix things up
+		mainLoop(); //program only does 4 things right now, occasionally blow stuff up to reset it
+		cleanup(); //blow everything up in the right order
 	}
 
 private:
 
-	struct UniformBufferObject {
-		glm::mat4 model;
-		glm::mat4 view;
-		glm::mat4 proj;
+	struct UniformBufferObject { //shader dlobal object
+		glm::mat4 model; //model matrix
+		glm::mat4 view; //view matrix
+		glm::mat4 proj; //projection matrix
 	};
 
-	struct Vertex {
-		glm::vec2 pos;
-		glm::vec3 color;
+	struct Vertex { //shader vertex information
+		glm::vec2 pos;  //position vetor only x, y for now
+		glm::vec3 color; //color vector, RBG, alpha hardcoded to 1 in shader for now
+		//data is interleaved in memory i.e <[pos][color]><[pos][color]>...
+		//                                  ^---stride---^
 
-		static VkVertexInputBindingDescription getBindingDescription() {
+		static VkVertexInputBindingDescription getBindingDescription() { //generate struct describing the binding properties
 			VkVertexInputBindingDescription bindingDes = {};
-			bindingDes.binding = 0;
-			bindingDes.stride = sizeof(Vertex);
-			bindingDes.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+			bindingDes.binding = 0; //binding shader will look for the data buffer at
+			bindingDes.stride = sizeof(Vertex); //current size of the struct
+			bindingDes.inputRate = VK_VERTEX_INPUT_RATE_VERTEX; //advance data entry every vertex, rather than every instance
 
-			return bindingDes;
+			return bindingDes; //return the struct
 		}
 
-		static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions() {
+		static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions() { //generate an array of structs describing our vertex struct
 			std::array<VkVertexInputAttributeDescription, 2> attDes = {};
 
-			attDes[0].binding = 0;
-			attDes[0].location = 0;
-			attDes[0].format = VK_FORMAT_R32G32_SFLOAT;
-			attDes[0].offset = offsetof(Vertex, pos);
+			attDes[0].binding = 0; //binding, must match appropriate VkVertexInputBindingDescription
+			attDes[0].location = 0; //location specified in shader for i-th data member - 0:0
+			attDes[0].format = VK_FORMAT_R32G32_SFLOAT; //specify data vector size using color flags - two 32 bit signed floats
+			attDes[0].offset = offsetof(Vertex, pos); //offset to find pos elements <^[pos][color]><^[pos][color]>...
 
-			attDes[1].binding = 0;
-			attDes[1].location = 1;
-			attDes[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-			attDes[1].offset = offsetof(Vertex, color);
+			attDes[1].binding = 0; //binding, must match appropriate VkVertexInputBindingDescription
+			attDes[1].location = 1; //location specified in shader for i-th data member - 0:1
+			attDes[1].format = VK_FORMAT_R32G32B32_SFLOAT; //specify data vector size using color flags - three 32 bit signed floats
+			attDes[1].offset = offsetof(Vertex, color); //offset to find color elements <[pos]^[color]><[pos]^[color]>...
 
-			return attDes;
+			return attDes; //return the struct
 		}
-	};
+	}; 
 
-	struct QueueFamilyIndices {
-		int graphicsFamily = -1;
-		int presentFamily = -1;
+	struct QueueFamilyIndices { //struct to hold current device indexes for queue families being used
+		int graphicsFamily = -1; //graphics family index - draw related operations - implies memory transfer operations support
+		int presentFamily = -1;  //present family index - operations related to presenting images to swapchain/framebuffers - ideally the same as the graphics family
 
-		bool isComplete() {
+		bool isComplete() { //return true if all needed queues have been found
 			return graphicsFamily >= 0 && presentFamily >= 0;
 		}
 
 	};
 
-	struct SwapChainSupportDetails {
-		VkSurfaceCapabilitiesKHR capabilities;
-		std::vector<VkSurfaceFormatKHR> formats;
-		std::vector<VkPresentModeKHR> presentModes;
+	struct SwapChainSupportDetails { //struct to hold the current SwapChain support details of our physical device
+		VkSurfaceCapabilitiesKHR capabilities; //capability list struct
+		std::vector<VkSurfaceFormatKHR> formats; //supported formats
+		std::vector<VkPresentModeKHR> presentModes; //supported present modes
 	};
 
-	GLFWwindow *window;
+	GLFWwindow *window; //created by glfw with vulkan instead of OpenGL - platform agnostic code
 
-	VkInstance instance;
+	VkInstance instance; //Vulkan instance - explicitly created - destroy last
+	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE; //physical device to use - retrieved from instance - implicitly destroyed shares lifecycle with instance
 
-	VkDebugReportCallbackEXT callback;
+	VkDevice device; //logical device created from the physical device - explicitly created from physical device - destroy only after everything created from it
 
-	VkSurfaceKHR surface;
+	VkQueue graphicsQueue; //the graphics queue - explicitly created from the device - destroy before device
+	VkQueue presentQueue; //the present queue - explicitly created from the device - destroy before device
 
-	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-	VkDevice device;
+	VkDebugReportCallbackEXT callback; //debug message callback function to output to console - explicitly created from instance - destroy before instance
 
-	VkQueue graphicsQueue;
-	VkQueue presentQueue;
+	VkSurfaceKHR surface; //surface connecting the instance to the window using glfw helper functions for platform agnosticism - explicitly created from instance and window - destroy before instance
 
-	VkSwapchainKHR swapChain;
+	VkFormat swapChainImageFormat; //the chosen image format for the SwapChain described as a pixel format and a color space - member of the SwapChain - no cleanup required
+	VkExtent2D swapChainExtent; //extent of the SwapChain in height and width will either be the window actual or the max allowed by the surface - member of the SwapChain - no cleanup required
+	VkSwapchainKHR swapChain; //object to describe the 
 	std::vector<VkImage> swapChainImages;
-	VkFormat swapChainImageFormat;
-	VkExtent2D swapChainExtent;
+
 	std::vector<VkImageView> swapChainImageViews;
 
 	VkRenderPass renderPass;
 	VkDescriptorSetLayout desSetLayout;
 	VkPipelineLayout pipelineLayout;
 	VkPipeline graphicsPipeline;
+
 	std::vector<VkFramebuffer> swapChainFramebuffers;
 
 	VkBuffer vertexBuffer;
@@ -1152,7 +1162,7 @@ private:
 
 	void mainLoop() {
 
-		time_t timek = std::time(0);
+		auto timek = std::chrono::high_resolution_clock::now();
 		uint32_t frames = 0;
 
 		std::cout << time << std::endl;
@@ -1166,10 +1176,10 @@ private:
 
 			frames++;
 
-			if (std::time(0) - timek >= 1) {
+			if (std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::high_resolution_clock::now() - timek).count() >= 1) {
 				std::cout << frames << std::endl;
 				frames = 0;
-				timek = std::time(0);
+				timek = std::chrono::high_resolution_clock::now();
 			}
 		}
 

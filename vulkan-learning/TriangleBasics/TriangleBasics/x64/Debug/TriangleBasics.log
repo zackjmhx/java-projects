@@ -1,4 +1,4 @@
 ﻿  TriangleBasicsApp.cpp
-e:\github\learning-projects\vulkan-learning\trianglebasics\trianglebasics\trianglebasicsapp.cpp(621): warning C4838: conversion from 'int' to 'uint32_t' requires a narrowing conversion
+e:\github\learning-projects\vulkan-learning\trianglebasics\trianglebasics\trianglebasicsapp.cpp(625): warning C4838: conversion from 'int' to 'uint32_t' requires a narrowing conversion
   TriangleBasics.vcxproj -> E:\GitHub\learning-projects\vulkan-learning\TriangleBasics\x64\Debug\TriangleBasics.exe
   TriangleBasics.vcxproj -> E:\GitHub\learning-projects\vulkan-learning\TriangleBasics\x64\Debug\TriangleBasics.pdb (Full PDB)
