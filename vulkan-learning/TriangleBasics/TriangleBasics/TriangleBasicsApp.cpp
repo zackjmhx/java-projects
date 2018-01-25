@@ -167,7 +167,8 @@ private:
 	VkSwapchainKHR swapChain; //object to hold series of images to present to the surface - created explicitly from the device - destroy before device
 	std::vector<VkImage> swapChainImages; //vector of images held in the swapchain - created during swapchain creation - no cleanup required
 
-	std::vector<VkImageView> swapChainImageViews; 
+	std::vector<VkImageView> swapChainImageViews; //vector of views related to swapchain images - created from SwapChain images - delete before the swapchain
+	VkImageView texImgView; //image view for our texture - created from texture image - delete before the image
 
 	VkRenderPass renderPass;
 	VkDescriptorSetLayout desSetLayout;
@@ -185,8 +186,8 @@ private:
 	VkBuffer uniformBuffer;
 	VkDeviceMemory uniformBufferMemory;
 
-	VkImage texImage; //image object to hold texture texels - -
-	VkDeviceMemory texImageMem; //device memory to hold our image object - -
+	VkImage texImage; //image object to hold texture texels - explicitly created on the device - destroy before the device
+	VkDeviceMemory texImageMem; //device memory to hold our image object - explicitly created on the device - free after the destruction of the related buffer
 
 	VkCommandPool commandPool;
 	VkDescriptorPool desPool;
@@ -254,6 +255,7 @@ private:
 		createCommandPool();
 
 		createTextureImage(); //load texture image into device memory
+		createTextureImageView();
 
 		createVertexBuffer();
 		
@@ -655,24 +657,40 @@ private:
 		swapChainImageViews.resize(swapChainImages.size());
 
 		for (size_t i = 0; i < swapChainImages.size(); i++) {
-			VkImageViewCreateInfo createInfo = {};
-			createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-			createInfo.image = swapChainImages[i];
-			createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-			createInfo.format = swapChainImageFormat;
-			createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-			createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-			createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-			createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-			createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			createInfo.subresourceRange.baseMipLevel = 0;
-			createInfo.subresourceRange.levelCount = 1;
-			createInfo.subresourceRange.baseArrayLayer = 0;
-			createInfo.subresourceRange.layerCount = 1;
+			VkImageSubresourceRange subresourceRange = {};
+			subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			subresourceRange.baseMipLevel = 0;
+			subresourceRange.levelCount = 1;
+			subresourceRange.baseArrayLayer = 0;
+			subresourceRange.layerCount = 1;
 
-			if (vkCreateImageView(device, &createInfo, nullptr, &swapChainImageViews[i]) != VK_SUCCESS)
-				throw std::runtime_error("Failed to create image views");
+			texImageCreate(swapChainImages[i], VK_IMAGE_VIEW_TYPE_2D, swapChainImageFormat, { VK_COMPONENT_SWIZZLE_IDENTITY }, subresourceRange, swapChainImageViews[i]);
+
 		}
+	}
+
+	void textureImageView() {
+
+	}
+
+	void texImageCreate(VkImage image, VkImageViewType viewType, VkFormat format, VkComponentMapping componentStettings, VkImageSubresourceRange range, VkImageView view) {
+		VkImageViewCreateInfo createInfo = {};
+		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+		createInfo.image = image;
+		createInfo.viewType = viewType;
+		createInfo.format = format;
+		createInfo.components.r = componentStettings.r;
+		createInfo.components.b = componentStettings.b;
+		createInfo.components.g = componentStettings.g;
+		createInfo.components.a = componentStettings.a;
+		createInfo.subresourceRange.aspectMask = range.aspectMask;
+		createInfo.subresourceRange.baseMipLevel = range.baseMipLevel;
+		createInfo.subresourceRange.levelCount = range.levelCount;
+		createInfo.subresourceRange.baseArrayLayer = range.baseArrayLayer;
+		createInfo.subresourceRange.layerCount = range.layerCount;
+
+		if (vkCreateImageView(device, &createInfo, nullptr, &view) != VK_SUCCESS)
+			throw std::runtime_error("Failed to create image views");
 	}
 
 
