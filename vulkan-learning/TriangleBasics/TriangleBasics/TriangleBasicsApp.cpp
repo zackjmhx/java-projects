@@ -428,8 +428,8 @@ private:
 		VkPhysicalDeviceProperties deviceProperties;
 		vkGetPhysicalDeviceProperties(device, &deviceProperties);
 
-		//VkPhysicalDeviceFeatures deviceFeatures;
-		//vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+		VkPhysicalDeviceFeatures deviceFeatures;
+		vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
 
 		if (!(deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU))
 			return false;
@@ -445,7 +445,7 @@ private:
 			swapChainSufficient = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
 		}
 
-		return indicies.isComplete() && swapChainSufficient;
+		return indicies.isComplete() && swapChainSufficient && deviceFeatures.samplerAnisotropy;
 	}
 
 	bool checkDeviceExtentionSupport(VkPhysicalDevice device) {
