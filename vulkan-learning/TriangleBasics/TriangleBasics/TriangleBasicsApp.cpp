@@ -664,16 +664,23 @@ private:
 			subresourceRange.baseArrayLayer = 0;
 			subresourceRange.layerCount = 1;
 
-			texImageCreate(swapChainImages[i], VK_IMAGE_VIEW_TYPE_2D, swapChainImageFormat, { VK_COMPONENT_SWIZZLE_IDENTITY }, subresourceRange, swapChainImageViews[i]);
+			texImageCreate(swapChainImages[i], VK_IMAGE_VIEW_TYPE_2D, swapChainImageFormat, { VK_COMPONENT_SWIZZLE_IDENTITY }, subresourceRange, &swapChainImageViews[i]);
 
 		}
 	}
 
-	void textureImageView() {
+	void createTextureImageView() {
+		VkImageSubresourceRange subresourceRange = {};
+		subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		subresourceRange.baseMipLevel = 0;
+		subresourceRange.levelCount = 1;
+		subresourceRange.baseArrayLayer = 0;
+		subresourceRange.layerCount = 1;
 
+		//texImageCreate(swapChainImages[i], VK_IMAGE_VIEW_TYPE_2D, swapChainImageFormat, { VK_COMPONENT_SWIZZLE_IDENTITY }, subresourceRange, swapChainImageViews[i]);
 	}
 
-	void texImageCreate(VkImage image, VkImageViewType viewType, VkFormat format, VkComponentMapping componentStettings, VkImageSubresourceRange range, VkImageView view) {
+	void texImageCreate(VkImage image, VkImageViewType viewType, VkFormat format, VkComponentMapping componentStettings, VkImageSubresourceRange range, VkImageView *view) {
 		VkImageViewCreateInfo createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 		createInfo.image = image;
@@ -689,7 +696,7 @@ private:
 		createInfo.subresourceRange.baseArrayLayer = range.baseArrayLayer;
 		createInfo.subresourceRange.layerCount = range.layerCount;
 
-		if (vkCreateImageView(device, &createInfo, nullptr, &view) != VK_SUCCESS)
+		if (vkCreateImageView(device, &createInfo, nullptr, view) != VK_SUCCESS)
 			throw std::runtime_error("Failed to create image views");
 	}
 
