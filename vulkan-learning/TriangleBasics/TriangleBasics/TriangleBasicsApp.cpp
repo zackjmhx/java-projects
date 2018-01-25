@@ -1096,7 +1096,7 @@ private:
 		copyRegion.size = size; //size of the memory region to copy
 		vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion); //record the copy command
 
-		endSingleTimeCommand(commandBuffer);
+		endSingleTimeCommands(commandBuffer);
 	}
 
 	VkCommandBuffer beginSingleTimeCommands() {
@@ -1118,7 +1118,7 @@ private:
 		return commandBuffer;
 	}
 
-	void endSingleTimeCommand(VkCommandBuffer commandBuffer) {
+	void endSingleTimeCommands(VkCommandBuffer commandBuffer) {
 		vkEndCommandBuffer(commandBuffer); //stop recording the buffer
 
 		VkSubmitInfo submitInfo = {};
@@ -1130,6 +1130,29 @@ private:
 		vkQueueWaitIdle(graphicsQueue); //wait for it to finish
 
 		vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer); //free the buffer
+	}
+
+	void trasitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) {
+		VkCommandBuffer commandBuffer = beginSingleTimeCommands();
+
+		VkImageMemoryBarrier barrier = {};
+		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		barrier.oldLayout = oldLayout; //specify the old layout
+		barrier.newLayout = newLayout; //layout to trasfer to
+		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED; //stayding in queue
+		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED; //ibid
+		barrier.image = image; //set the image who is having their layout transitioned
+		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT; //the aspect of the image to transition
+		barrier.subresourceRange.baseMipLevel = 0; //no mipmapping
+		barrier.subresourceRange.levelCount = 1; //one level
+		barrier.subresourceRange.baseArrayLayer = 0; //not using an array
+		barrier.subresourceRange.layerCount = 1; //no stereoscopic images or anything
+		barrier.srcAccessMask = 0; //TODO
+		barrier.dstAccessMask = 0; //TODO
+
+		vkCmdPipelineBarrier(commandBuffer,	0 /* TODO */, 0 /* TODO */,	0, 0, nullptr, 0, nullptr,1, &barrier);
+
+		endSingleTimeCommands(commandBuffer);
 	}
 
 
