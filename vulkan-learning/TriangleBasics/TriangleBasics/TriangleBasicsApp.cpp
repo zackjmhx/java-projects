@@ -15,6 +15,9 @@
 #include <array>
 #include <chrono>
 
+#define STB_IMAGE_IMPLEMENTATION //include stb function definitions
+#include <stb_image.h>
+
 const int WIDTH = 800; //window initial width
 const int HEIGHT = 600; //window initial height
 
@@ -161,10 +164,10 @@ private:
 
 	VkFormat swapChainImageFormat; //the chosen image format for the SwapChain described as a pixel format and a color space - member of the SwapChain - no cleanup required
 	VkExtent2D swapChainExtent; //extent of the SwapChain in height and width will either be the window actual or the max allowed by the surface - member of the SwapChain - no cleanup required
-	VkSwapchainKHR swapChain; //object to describe the 
-	std::vector<VkImage> swapChainImages;
+	VkSwapchainKHR swapChain; //object to hold series of images to present to the surface - created explicitly from the device - destroy before device
+	std::vector<VkImage> swapChainImages; //vector of images held in the swapchain - created during swapchain creation - no cleanup required
 
-	std::vector<VkImageView> swapChainImageViews;
+	std::vector<VkImageView> swapChainImageViews; 
 
 	VkRenderPass renderPass;
 	VkDescriptorSetLayout desSetLayout;
@@ -282,10 +285,14 @@ private:
 
 		vkEnumerateInstanceExtensionProperties(nullptr, &extentionCount, extentions.data());
 
+		
+#ifndef NDEBUG
 		std::cout << "Avalible extentions" << std::endl;
-
 		for (const auto &extention : extentions)
 			std::cout << "\t" << extention.extensionName << std::endl;
+#endif // !NDEBUG
+
+		
 
 
 		VkInstanceCreateInfo createInfo = {};
@@ -1165,8 +1172,6 @@ private:
 		auto timek = std::chrono::high_resolution_clock::now();
 		uint32_t frames = 0;
 
-		std::cout << time << std::endl;
-
 		while (!glfwWindowShouldClose(window)) {
 
 			glfwPollEvents();
@@ -1177,7 +1182,7 @@ private:
 			frames++;
 
 			if (std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::high_resolution_clock::now() - timek).count() >= 1) {
-				std::cout << frames << std::endl;
+				std::cout << "Current FPS: " << frames << std::endl;
 				frames = 0;
 				timek = std::chrono::high_resolution_clock::now();
 			}
