@@ -1099,6 +1099,26 @@ private:
 		endSingleTimeCommands(commandBuffer);
 	}
 
+	void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height) {
+		VkCommandBuffer commandBuffer = beginSingleTimeCommands();
+
+		VkBufferImageCopy region = {};
+		region.bufferOffset = 0; //start at the beggining of the buffer
+		region.bufferRowLength = 0; //no row padding - tightly packed
+		region.bufferImageHeight = 0; //no height padding - tightly packed
+
+		region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT; //the aspect of the buffer to copy
+		region.imageSubresource.mipLevel = 0; //no mipmapping
+		region.imageSubresource.layerCount = 1; //only one shall pass
+
+		region.imageOffset = { 0, 0, 0 }; //start indexes
+		region.imageExtent = { width, height, 1 }; //end indexes
+
+		vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region); //copy the region of the specified buffer to the specified image
+
+		endSingleTimeCommands(commandBuffer);
+	}
+
 	VkCommandBuffer beginSingleTimeCommands() {
 		VkCommandBufferAllocateInfo allocInfo = {};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
