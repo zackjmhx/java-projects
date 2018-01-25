@@ -189,6 +189,8 @@ private:
 	VkImage texImage; //image object to hold texture texels - explicitly created on the device - destroy before the device
 	VkDeviceMemory texImageMem; //device memory to hold our image object - explicitly created on the device - free after the destruction of the related buffer
 
+	VkSampler texSampler; //sampler to take our texel data and turn it into proper fragment data - explicitly created on the device - destroy before the device
+
 	VkCommandPool commandPool;
 	VkDescriptorPool desPool;
 	VkDescriptorSet desSet;
@@ -255,7 +257,8 @@ private:
 		createCommandPool();
 
 		createTextureImage(); //load texture image into device memory
-		createTextureImageView();
+		createTextureImageView(); //create a view for our texture
+		createTexureSampler();
 
 		createVertexBuffer();
 		
@@ -677,7 +680,7 @@ private:
 		subresourceRange.baseArrayLayer = 0;
 		subresourceRange.layerCount = 1;
 
-		//texImageCreate(swapChainImages[i], VK_IMAGE_VIEW_TYPE_2D, swapChainImageFormat, { VK_COMPONENT_SWIZZLE_IDENTITY }, subresourceRange, swapChainImageViews[i]);
+		texImageCreate(texImage, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, { VK_COMPONENT_SWIZZLE_IDENTITY }, subresourceRange, &texImgView);
 	}
 
 	void texImageCreate(VkImage image, VkImageViewType viewType, VkFormat format, VkComponentMapping componentStettings, VkImageSubresourceRange range, VkImageView *view) {
@@ -697,6 +700,33 @@ private:
 		createInfo.subresourceRange.layerCount = range.layerCount;
 
 		if (vkCreateImageView(device, &createInfo, nullptr, view) != VK_SUCCESS)
+			throw std::runtime_error("Failed to create image views");
+	}
+
+	void createTexureSampler() {
+		VkSamplerCreateInfo samplerInfo = {};
+		samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+		samplerInfo.magFilter = VK_FILTER_LINEAR;
+		samplerInfo.minFilter = VK_FILTER_LINEAR;
+
+		samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+
+		samplerInfo.anisotropyEnable = VK_TRUE;
+		samplerInfo.maxAnisotropy = 16;
+		samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+
+		samplerInfo.unnormalizedCoordinates = VK_FALSE;
+		samplerInfo.compareEnable = VK_FALSE;
+		samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+
+		samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+		samplerInfo.mipLodBias = 0.0f;
+		samplerInfo.minLod = 0.0f;
+		samplerInfo.maxLod = 0.0f;
+
+		if (vkCreateSampler(device, &samplerInfo, nullptr, &texSampler) != VK_SUCCESS)
 			throw std::runtime_error("Failed to create image views");
 	}
 
@@ -1468,6 +1498,10 @@ private:
 		vkDestroySemaphore(device, imageAvailableSemaphore, nullptr);
 
 		cleanupSwapChain(); //destroy swapchain components
+
+		vkDestroySampler(device, texSampler, nullptr); //destroy texture sampler
+
+		vkDestroyImageView(device, texImgView, nullptr); //destroy texture image view
 
 		vkDestroyImage(device, texImage, nullptr); //destroy texture image
 		vkFreeMemory(device, texImageMem, nullptr); //free the device memory
