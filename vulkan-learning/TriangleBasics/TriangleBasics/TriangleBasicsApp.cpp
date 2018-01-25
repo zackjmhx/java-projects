@@ -1172,10 +1172,27 @@ private:
 		barrier.subresourceRange.levelCount = 1; //one level
 		barrier.subresourceRange.baseArrayLayer = 0; //not using an array
 		barrier.subresourceRange.layerCount = 1; //no stereoscopic images or anything
-		barrier.srcAccessMask = 0; //TODO
-		barrier.dstAccessMask = 0; //TODO
 
-		vkCmdPipelineBarrier(commandBuffer,	0 /* TODO */, 0 /* TODO */,	0, 0, nullptr, 0, nullptr,1, &barrier);
+		VkPipelineStageFlags srcStage;
+		VkPipelineStageFlags dstStage;
+		if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+			barrier.srcAccessMask = 0; //Wait on nothing
+			barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT; //make the transfer stage wait on this barrier
+
+			srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT; //wait on nothing
+			dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT; //hold up the tranfer phase
+		} else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+			barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT; //Wait on the transfer phase
+			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT; //make the fragment shader wait on this barrier
+
+			srcStage = VK_ACCESS_TRANSFER_WRITE_BIT; //wait on the tranfer phase
+			dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT; //hold up the fragment shader
+		} else {
+			throw std::runtime_error("Currently unsupported layout transition");
+		}
+
+
+		vkCmdPipelineBarrier(commandBuffer,	srcStage, dstStage,	0, 0, nullptr, 0, nullptr,1, &barrier);
 
 		endSingleTimeCommands(commandBuffer);
 	}
