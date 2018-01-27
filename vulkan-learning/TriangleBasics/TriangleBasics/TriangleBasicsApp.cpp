@@ -10,6 +10,7 @@
 #include <fstream>
 
 #define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE //use normalized coordinates for depth
 #include <glm/glm.hpp> //linear algebra library
 #include <glm/gtc/matrix_transform.hpp>
 #include <array>
@@ -174,7 +175,6 @@ private:
 	std::vector<VkImage> swapChainImages; //vector of images held in the swapchain - created during swapchain creation - no cleanup required
 
 	std::vector<VkImageView> swapChainImageViews; //vector of views related to swapchain images - created from SwapChain images - delete before the swapchain
-	VkImageView texImgView; //image view for our texture - created from texture image - delete before the image
 
 	VkRenderPass renderPass;
 	VkDescriptorSetLayout desSetLayout;
@@ -194,6 +194,11 @@ private:
 
 	VkImage texImage; //image object to hold texture texels - explicitly created on the device - destroy before the device
 	VkDeviceMemory texImageMem; //device memory to hold our image object - explicitly created on the device - free after the destruction of the related buffer
+	VkImageView texImgView; //image view for our texture - created from texture image - delete before the image
+
+	VkImage depthImage; //image object to hold depth attachment image one needed per running draw op- explicitly created on the device - destroy before the device
+	VkDeviceMemory depthImageMem; //device memory to hold our depth image object - explicitly created on the device - free after the destruction of the related buffer
+	VkImageView depthImgView; //image view for our depth - created from texture image - delete before the image
 
 	VkSampler texSampler; //sampler to take our texel data and turn it into proper fragment data - explicitly created on the device - destroy before the device
 
@@ -267,6 +272,8 @@ private:
 		createFrameBuffer();
 
 		createCommandPool();
+
+		createDepthResources();
 
 		createTextureImage(); //load texture image into device memory
 		createTextureImageView(); //create a view for our texture
@@ -715,7 +722,7 @@ private:
 		if (vkCreateImageView(device, &createInfo, nullptr, view) != VK_SUCCESS)
 			throw std::runtime_error("Failed to create image views");
 	}
-
+	
 	void createTexureSampler() {
 		VkSamplerCreateInfo samplerInfo = {};
 		samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -1019,6 +1026,9 @@ private:
 			throw std::runtime_error("Failed to create command pool.");
 	}
 
+	void createDepthResources() {
+
+	}
 
 	void createTextureImage() {
 		int texWidth, texHeight, texChannels; //vars to hold image data
