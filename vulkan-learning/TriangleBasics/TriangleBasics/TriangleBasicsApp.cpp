@@ -280,7 +280,7 @@ private:
 
 		createFrameBuffer();
 
-		createTextureImage(); //load texture image into device memory
+		createTextureImage("texture.jpg"); //load texture image into device memory
 		createTextureImageView(); //create a view for our texture
 		createTexureSampler();
 
@@ -1108,7 +1108,7 @@ private:
 		}
 	}
 
-	void createTextureImage() {
+	void createTextureImage(const std::string fileName) {
 		int texWidth, texHeight, texChannels; //vars to hold image data
 		stbi_uc *pixels = stbi_load("textures/texture.jpg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha); //load the pixel data and force alpha channel even if missing
 
