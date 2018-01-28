@@ -1108,7 +1108,7 @@ private:
 		imageInfo.tiling = tiling; //using a staging buffer so we don't need texel access
 		imageInfo.format = format; //texel format
 		imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; //we don't need to preserve any initial texel data
-		imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT; //the image is going to recieve data from our staging buffer and we need access to the image from the shader
+		imageInfo.usage = usage; //the image is going to recieve data from our staging buffer and we need access to the image from the shader
 		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE; //the graphics queue implicitly supports memory transfers so only one queue will use this image
 		imageInfo.samples = VK_SAMPLE_COUNT_1_BIT; //No multisampling
 		imageInfo.flags = 0; //No flags for now - optional
@@ -1279,7 +1279,15 @@ private:
 		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED; //stayding in queue
 		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED; //ibid
 		barrier.image = image; //set the image who is having their layout transitioned
-		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT; //the aspect of the image to transition
+		if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
+			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT; //the aspect of the image to transition
+
+			if (hasStencilComponent(format))
+				barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_COLOR_BIT;
+
+		} else {
+			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT; //the aspect of the image to transition
+		}
 		barrier.subresourceRange.baseMipLevel = 0; //no mipmapping
 		barrier.subresourceRange.levelCount = 1; //one level
 		barrier.subresourceRange.baseArrayLayer = 0; //not using an array
