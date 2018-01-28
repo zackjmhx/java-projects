@@ -8,11 +8,14 @@
 #include <set>
 #include <algorithm>
 #include <fstream>
+#include <unordered_map>
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE //use normalized coordinates for depth
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp> //linear algebra library
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/hash.hpp>
 #include <array>
 #include <chrono>
 
@@ -73,9 +76,21 @@ struct Vertex { //shader vertex information
 		return attDes; //return the struct
 	}
 
+	bool operator==(const Vertex &other) const {
+		return pos == other.pos && color == other.color && tex == other.tex;
+	}
 
 };
 
+namespace std {
+	template<> struct hash<Vertex> {
+		size_t operator()(Vertex const& vertex) const {
+			return ((hash<glm::vec3>()(vertex.pos) ^
+				(hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^
+				(hash<glm::vec2>()(vertex.tex) << 1);
+		}
+	};
+}
 
 struct QueueFamilyIndices { //struct to hold current device indexes for queue families being used
 	int graphicsFamily = -1; //graphics family index - draw related operations - implies memory transfer operations support
