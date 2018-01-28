@@ -951,7 +951,7 @@ private:
 		pipelineLayoutInfo.pPushConstantRanges = 0;
 
 		if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
-			throw std::runtime_error("Failed to create pipeline layout.");
+				throw std::runtime_error("Failed to create pipeline layout.");
 
 		VkGraphicsPipelineCreateInfo pipelineInfo = {};
 		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -1026,7 +1026,21 @@ private:
 			throw std::runtime_error("Failed to create command pool.");
 	}
 
+
 	void createDepthResources() {
+		VkFormat depthFormat = findSupportedFormat(
+			{ VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT }, 
+			VK_IMAGE_TILING_OPTIMAL, 
+			VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+
+		createImage(swapChainExtent.width, swapChainExtent.height, 
+			depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			depthImage, depthImageMem);
+
+		ovgfCreateimageView(depthImage, )
+	}
+
 	bool hasStencilComponent(VkFormat format) {
 		return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 	}
