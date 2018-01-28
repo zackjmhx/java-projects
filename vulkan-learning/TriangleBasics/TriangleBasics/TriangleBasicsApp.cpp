@@ -19,6 +19,11 @@
 #define STB_IMAGE_IMPLEMENTATION //include stb function definitions
 #include <stb_image.h>
 
+#define TINYOBJLOADER_IMPLEMENTATION
+#include <tiny_obj_loader.h> //lightweight obj file loader
+
+
+
 const int WIDTH = 800; //window initial width
 const int HEIGHT = 600; //window initial height
 
