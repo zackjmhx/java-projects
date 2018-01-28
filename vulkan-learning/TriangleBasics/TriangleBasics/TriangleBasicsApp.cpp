@@ -1115,7 +1115,7 @@ private:
 		VkDeviceSize imageSize = texWidth * texHeight * 4; //pixel count * number of bytes
 
 		if (!pixels) //we have no image if this goes off
-			throw std::runtime_error("Failed to load texture image");
+			throw std::runtime_error("Failed to load texture image " + fileName);
 
 		VkBuffer stageBuff; //staging buffer for the pixels
 		VkDeviceMemory stageBuffMem; //buffer device memory
