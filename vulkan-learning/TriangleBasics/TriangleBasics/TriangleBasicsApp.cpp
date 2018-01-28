@@ -269,11 +269,12 @@ private:
 		createRenderPass();
 		createDescriptorSetLayout();
 		createGraphicsPipeline();
-		createFrameBuffer();
 
 		createCommandPool();
 
 		createDepthResources();
+
+		createFrameBuffer();
 
 		createTextureImage(); //load texture image into device memory
 		createTextureImageView(); //create a view for our texture
