@@ -1240,7 +1240,7 @@ private:
 	}
 
 	void createIndexBuffer() {
-		VkDeviceSize bufferSize = sizeof(vIndicies[0]) * vIndicies.size();
+		VkDeviceSize bufferSize = sizeof(vIndices[0]) * vIndices.size();
 
 		createStagedBuffer(bufferSize, vIndices, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, 0, indexBuffer, indexBufferMemory);
 
