@@ -1534,6 +1534,11 @@ private:
 	}
 
 	void cleanupSwapChain() {
+		vkDestroyImageView(device, depthImgView, nullptr);
+		vkDestroyImage(device, depthImage, nullptr);
+		vkFreeMemory(device, depthImageMem, nullptr); //free the device memory
+
+
 		for (auto framebuffer : swapChainFramebuffers)
 			vkDestroyFramebuffer(device, framebuffer, nullptr);
 
@@ -1560,6 +1565,7 @@ private:
 		createImageViews();
 		createRenderPass();
 		createGraphicsPipeline();
+		createDepthResources();
 		createFrameBuffer();
 		createCommandBuffers();
 
