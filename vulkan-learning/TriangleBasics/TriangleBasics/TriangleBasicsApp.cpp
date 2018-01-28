@@ -1214,33 +1214,50 @@ private:
 
 		for (const auto &shape : shapes) {
 			for (const auto &index : shape.mesh.indices) {
-				Vertex vertex = {};
+				Vertex vertex[3] = {};
 
-				vertex.pos = {
+				vertex[i].pos = {
 					attrib.vertices[3 * index.vertex_index + 0],
 					attrib.vertices[3 * index.vertex_index + 1],
 					attrib.vertices[3 * index.vertex_index + 2]
 				};
 
-				vertex.tex = {
+				vertex[i].tex = {
 					attrib.texcoords[2 * index.texcoord_index + 0],
 					1.0f - attrib.texcoords[2 * index.texcoord_index + 1] //Fix obj - vulkan coord system mismatch
 				};
 
-				vertex.color = { 1.0f, 1.0f, 1.0f };
+				vertex[i].color = { 1.0f, 1.0f, 1.0f };
 
-				if (uniqueVerticies.count(vertex) == 0) {
-					uniqueVerticies[vertex] = static_cast<uint32_t>(vertices.size());
-					vertices.push_back(vertex);
+				if (uniqueVerticies.count(vertex[i]) == 0) {
+					uniqueVerticies[vertex[i]] = static_cast<uint32_t>(vertices.size());
+					vertices.push_back(vertex[i]);
 				}
 
-				vIndices.push_back(uniqueVerticies[vertex]);
+				vIndices.push_back(uniqueVerticies[vertex[i]]);
+
+				i++;
+
+				if (i == 3) {
+					glm::vec3 v1 = vertex[1].pos - vertex[0].pos;
+					glm::vec3 v2 = vertex[2].pos - vertex[0].pos;
+					glm::vec3 normal = glm::cross(v1, v2);
+
+					vertices.at(uniqueVerticies[vertex[0]]).normal += normal;
+					vertices.at(uniqueVerticies[vertex[1]]).normal += normal;
+					vertices.at(uniqueVerticies[vertex[2]]).normal += normal;
+
+					i = 0;
+				}	
 			}
 		}
 
 #ifndef NDEBUG
 		std::cout << "Finished loading model." << std::endl;
 #endif
+		
+		for (auto &vertex : vertices)
+			glm::normalize(vertex.normal);
 	}
 
 
