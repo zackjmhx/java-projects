@@ -687,7 +687,7 @@ private:
 			subresourceRange.baseArrayLayer = 0;
 			subresourceRange.layerCount = 1;
 
-			texImageCreate(swapChainImages[i], VK_IMAGE_VIEW_TYPE_2D, swapChainImageFormat, { VK_COMPONENT_SWIZZLE_IDENTITY }, subresourceRange, &swapChainImageViews[i]);
+			ovgfCreateimageView(swapChainImages[i], VK_IMAGE_VIEW_TYPE_2D, swapChainImageFormat, { VK_COMPONENT_SWIZZLE_IDENTITY }, subresourceRange, &swapChainImageViews[i]);
 
 		}
 	}
@@ -700,10 +700,10 @@ private:
 		subresourceRange.baseArrayLayer = 0;
 		subresourceRange.layerCount = 1;
 
-		texImageCreate(texImage, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, { VK_COMPONENT_SWIZZLE_IDENTITY }, subresourceRange, &texImgView);
+		ovgfCreateimageView(texImage, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, { VK_COMPONENT_SWIZZLE_IDENTITY }, subresourceRange, &texImgView);
 	}
 
-	void texImageCreate(VkImage image, VkImageViewType viewType, VkFormat format, VkComponentMapping componentStettings, VkImageSubresourceRange range, VkImageView *view) {
+	void ovgfCreateimageView(VkImage image, VkImageViewType viewType, VkFormat format, VkComponentMapping componentStettings, VkImageSubresourceRange range, VkImageView *view) {
 		VkImageViewCreateInfo createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 		createInfo.image = image;
