@@ -8,22 +8,44 @@
 #include <set>
 #include <algorithm>
 #include <fstream>
+#include <unordered_map>
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE //use normalized coordinates for depth
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp> //linear algebra library
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/hash.hpp>
 #include <array>
 #include <chrono>
 
 #define STB_IMAGE_IMPLEMENTATION //include stb function definitions
 #include <stb_image.h>
 
+#define TINYOBJLOADER_IMPLEMENTATION
+#include <tiny_obj_loader.h> //lightweight obj file loader
+
+
+
 const int WIDTH = 800; //window initial width
 const int HEIGHT = 600; //window initial height
 
 const std::string MODEL_PATH_ROOT = "models/";
 const std::string TEXTURE_PATH_ROOT = "textures/";
+
+	bool operator==(const Vertex &other) const {
+		return pos == other.pos && color == other.color && tex == other.tex;
+	}
+
+namespace std {
+	template<> struct hash<Vertex> {
+		size_t operator()(Vertex const& vertex) const {
+			return ((hash<glm::vec3>()(vertex.pos) ^
+				(hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^
+				(hash<glm::vec2>()(vertex.tex) << 1);
+		}
+	};
+}
 
 
 VkResult CreateDebugReportCallbackEXT(VkInstance instance, const VkDebugReportCallbackCreateInfoEXT *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkDebugReportCallbackEXT *pCallback) {
@@ -99,59 +121,7 @@ public:
 
 private:
 
-	struct UniformBufferObject { //shader dlobal object
-		glm::mat4 model; //model matrix
-		glm::mat4 view; //view matrix
-		glm::mat4 proj; //projection matrix
-	};
-
-	struct Vertex { //shader vertex information
-		glm::vec3 pos;  //position vetor x, y, z for now
-		glm::vec3 color; //color vector, RBG, alpha hardcoded to 1 in shader for now
-		glm::vec2 tex;
-		//data is interleaved in memory i.e <[pos][color][tex]><[pos][color][tex]>...
-		//                                  ^-----stride-----^
-
-		static VkVertexInputBindingDescription getBindingDescription() { //generate struct describing the binding properties
-			VkVertexInputBindingDescription bindingDes = {};
-			bindingDes.binding = 0; //binding shader will look for the data buffer at
-			bindingDes.stride = sizeof(Vertex); //current size of the struct
-			bindingDes.inputRate = VK_VERTEX_INPUT_RATE_VERTEX; //advance data entry every vertex, rather than every instance
-
-			return bindingDes; //return the struct
-		}
-
-		static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions() { //generate an array of structs describing our vertex struct
-			std::array<VkVertexInputAttributeDescription, 3> attDes = {};
-
-			attDes[0].binding = 0; //binding, must match appropriate VkVertexInputBindingDescription
-			attDes[0].location = 0; //location specified in shader for i-th data member - 0:0
-			attDes[0].format = VK_FORMAT_R32G32B32_SFLOAT; //specify data vector size using color flags - two 32 bit signed floats
-			attDes[0].offset = offsetof(Vertex, pos); //offset to find pos elements <^[pos][color][tex]><^[pos][color][tex]>...
-
-			attDes[1].binding = 0; //binding, must match appropriate VkVertexInputBindingDescription
-			attDes[1].location = 1; //location specified in shader for i-th data member - 0:1
-			attDes[1].format = VK_FORMAT_R32G32B32_SFLOAT; //specify data vector size using color flags - three 32 bit signed floats
-			attDes[1].offset = offsetof(Vertex, color); //offset to find color elements <[pos]^[color][tex]><[pos]^[color][tex]>...
-
-			attDes[2].binding = 0; //binding, must match appropriate VkVertexInputBindingDescription
-			attDes[2].location = 2; //location specified in shader for i-th data member - 0:2 
-			attDes[2].format = VK_FORMAT_R32G32_SFLOAT; //specify data vector size using color flags - two 32 bit signed floats
-			attDes[2].offset = offsetof(Vertex, tex); //offset to find color elements <[pos][color]^[tex]><[pos][color]^[tex]>...
-
-			return attDes; //return the struct
-		}
-	}; 
-
-	struct QueueFamilyIndices { //struct to hold current device indexes for queue families being used
-		int graphicsFamily = -1; //graphics family index - draw related operations - implies memory transfer operations support
-		int presentFamily = -1;  //present family index - operations related to presenting images to swapchain/framebuffers - ideally the same as the graphics family
-
-		bool isComplete() { //return true if all needed queues have been found
-			return graphicsFamily >= 0 && presentFamily >= 0;
-		}
-
-	};
+	
 
 	struct SwapChainSupportDetails { //struct to hold the current SwapChain support details of our physical device
 		VkSurfaceCapabilitiesKHR capabilities; //capability list struct
@@ -187,6 +157,9 @@ private:
 
 	std::vector<VkFramebuffer> swapChainFramebuffers;
 
+	std::vector<Vertex> vertices;
+	std::vector<uint32_t> vIndices;
+
 	VkBuffer vertexBuffer;
 	VkDeviceMemory vertexBufferMemory;
 
@@ -216,23 +189,6 @@ private:
 	VkSemaphore renderFinishedSemaphore;
 
 	QueueFamilyIndices indicies;
-
-	const std::vector<Vertex> vertices = {
-		{ { -0.5f, -0.5f, 0.0f },{ 1.0f, 0.0f, 0.0f },{ 1.0f, 0.0f } },
-		{ { 0.5f, -0.5f, 0.0f },{ 0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f } },
-		{ { 0.5f, 0.5f, 0.0f },{ 0.0f, 0.0f, 1.0f },{ 0.0f, 1.0f } },
-		{ { -0.5f, 0.5f, 0.0f },{ 1.0f, 1.0f, 1.0f },{ 1.0f, 1.0f } },
-		
-		{ { -0.5f, -0.5f, -0.5f },{ 1.0f, 0.0f, 0.0f },{ 1.0f, 0.0f } },
-		{ { 0.5f, -0.5f, -0.5f },{ 0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f } },
-		{ { 0.5f, 0.5f, -0.5f },{ 0.0f, 0.0f, 1.0f },{ 0.0f, 1.0f } },
-		{ { -0.5f, 0.5f, -0.5f },{ 1.0f, 1.0f, 1.0f },{ 1.0f, 1.0f } }
-	};
-
-	const std::vector<uint16_t> vIndicies = {
-		0, 1, 2, 2, 3, 0,
-		4, 5, 6, 6, 7, 4
-	};
 
 
 	void initWindow() {
@@ -280,9 +236,11 @@ private:
 
 		createFrameBuffer();
 
-		createTextureImage("texture.jpg"); //load texture image into device memory
+		createTextureImage("chalet.jpg"); //load texture image into device memory
 		createTextureImageView(); //create a view for our texture
 		createTexureSampler();
+
+		loadModel("chalet.obj");
 
 		createVertexBuffer();
 		
@@ -1142,6 +1100,9 @@ private:
 		vkDestroyBuffer(device, stageBuff, nullptr); //destroy the staging buffer
 		vkFreeMemory(device, stageBuffMem, nullptr); //free the buffers memory
 
+#ifndef NDEBUG
+		std::cout << "Finished loading texture." << std::endl;
+#endif
 	}
 
 	void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) {
@@ -1179,6 +1140,49 @@ private:
 	}
 
 
+	void loadModel(const std::string fileName) {
+		tinyobj::attrib_t attrib;
+		std::vector<tinyobj::shape_t> shapes;
+		std::vector<tinyobj::material_t> materials;
+		std::string err;
+
+		if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &err, (MODEL_PATH_ROOT + fileName).c_str()))
+			throw std::runtime_error(err);
+
+		std::unordered_map<Vertex, uint32_t> uniqueVerticies = {};
+
+		for (const auto &shape : shapes) {
+			for (const auto &index : shape.mesh.indices) {
+				Vertex vertex = {};
+
+				vertex.pos = {
+					attrib.vertices[3 * index.vertex_index + 0],
+					attrib.vertices[3 * index.vertex_index + 1],
+					attrib.vertices[3 * index.vertex_index + 2]
+				};
+
+				vertex.tex = {
+					attrib.texcoords[2 * index.texcoord_index + 0],
+					1.0f - attrib.texcoords[2 * index.texcoord_index + 1] //Fix obj - vulkan coord system mismatch
+				};
+
+				vertex.color = { 1.0f, 1.0f, 1.0f };
+
+				if (uniqueVerticies.count(vertex) == 0) {
+					uniqueVerticies[vertex] = static_cast<uint32_t>(vertices.size());
+					vertices.push_back(vertex);
+				}
+
+				vIndices.push_back(uniqueVerticies[vertex]);
+			}
+		}
+
+#ifndef NDEBUG
+		std::cout << "Finished loading model." << std::endl;
+#endif
+	}
+
+
 	void createVertexBuffer() {
 		VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
 
@@ -1186,9 +1190,9 @@ private:
 	}
 
 	void createIndexBuffer() {
-		VkDeviceSize bufferSize = sizeof(vIndicies[0]) * vIndicies.size();
+		VkDeviceSize bufferSize = sizeof(vIndices[0]) * vIndices.size();
 
-		createStagedBuffer(bufferSize, vIndicies, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, 0, indexBuffer, indexBufferMemory);
+		createStagedBuffer(bufferSize, vIndices, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, 0, indexBuffer, indexBufferMemory);
 
 	}
 
@@ -1479,11 +1483,11 @@ private:
 			VkDeviceSize offsets[] = { 0 };
 			vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
 
-			vkCmdBindIndexBuffer(commandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+			vkCmdBindIndexBuffer(commandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
 			vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &desSet, 0, nullptr);
 
-			vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(vIndicies.size()), 1, 0, 0, 0);
+			vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(vIndices.size()), 1, 0, 0, 0);
 
 			vkCmdEndRenderPass(commandBuffers[i]);
 
