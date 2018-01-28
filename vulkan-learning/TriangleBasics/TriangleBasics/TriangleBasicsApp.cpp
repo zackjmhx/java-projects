@@ -1672,6 +1672,8 @@ private:
 
 		ubo.proj[1][1] *= -1;
 
+		ubo.proj *= ubo.view * ubo.model;
+
 		void *data;
 		vkMapMemory(device, uniformBufferMemory, 0, sizeof(UniformBufferObject), 0, &data);
 		memcpy(data, &ubo, sizeof(UniformBufferObject));
