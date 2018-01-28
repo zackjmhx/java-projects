@@ -1300,7 +1300,7 @@ private:
 			srcStage = VK_ACCESS_TRANSFER_WRITE_BIT; //wait on the tranfer phase
 			dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT; //hold up the fragment shader
 		} else {
-			throw std::runtime_error("Currently unsupported layout transition");
+			throw std::invalid_argument("Currently unsupported layout transition");
 		}
 
 
