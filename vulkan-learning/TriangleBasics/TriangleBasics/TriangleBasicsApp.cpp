@@ -25,6 +25,63 @@ const int HEIGHT = 600; //window initial height
 const std::string MODEL_PATH_ROOT = "models/";
 const std::string TEXTURE_PATH_ROOT = "textures/";
 
+struct UniformBufferObject { //shader dlobal object
+	glm::mat4 model; //model matrix
+	glm::mat4 view; //view matrix
+	glm::mat4 proj; //projection matrix
+};
+
+struct Vertex { //shader vertex information
+	glm::vec3 pos;  //position vetor x, y, z for now
+	glm::vec3 color; //color vector, RBG, alpha hardcoded to 1 in shader for now
+	glm::vec2 tex;
+	//data is interleaved in memory i.e <[pos][color][tex]><[pos][color][tex]>...
+	//                                  ^-----stride-----^
+
+	static VkVertexInputBindingDescription getBindingDescription() { //generate struct describing the binding properties
+		VkVertexInputBindingDescription bindingDes = {};
+		bindingDes.binding = 0; //binding shader will look for the data buffer at
+		bindingDes.stride = sizeof(Vertex); //current size of the struct
+		bindingDes.inputRate = VK_VERTEX_INPUT_RATE_VERTEX; //advance data entry every vertex, rather than every instance
+
+		return bindingDes; //return the struct
+	}
+
+	static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions() { //generate an array of structs describing our vertex struct
+		std::array<VkVertexInputAttributeDescription, 3> attDes = {};
+
+		attDes[0].binding = 0; //binding, must match appropriate VkVertexInputBindingDescription
+		attDes[0].location = 0; //location specified in shader for i-th data member - 0:0
+		attDes[0].format = VK_FORMAT_R32G32B32_SFLOAT; //specify data vector size using color flags - two 32 bit signed floats
+		attDes[0].offset = offsetof(Vertex, pos); //offset to find pos elements <^[pos][color][tex]><^[pos][color][tex]>...
+
+		attDes[1].binding = 0; //binding, must match appropriate VkVertexInputBindingDescription
+		attDes[1].location = 1; //location specified in shader for i-th data member - 0:1
+		attDes[1].format = VK_FORMAT_R32G32B32_SFLOAT; //specify data vector size using color flags - three 32 bit signed floats
+		attDes[1].offset = offsetof(Vertex, color); //offset to find color elements <[pos]^[color][tex]><[pos]^[color][tex]>...
+
+		attDes[2].binding = 0; //binding, must match appropriate VkVertexInputBindingDescription
+		attDes[2].location = 2; //location specified in shader for i-th data member - 0:2 
+		attDes[2].format = VK_FORMAT_R32G32_SFLOAT; //specify data vector size using color flags - two 32 bit signed floats
+		attDes[2].offset = offsetof(Vertex, tex); //offset to find color elements <[pos][color]^[tex]><[pos][color]^[tex]>...
+
+		return attDes; //return the struct
+	}
+
+
+};
+
+
+struct QueueFamilyIndices { //struct to hold current device indexes for queue families being used
+	int graphicsFamily = -1; //graphics family index - draw related operations - implies memory transfer operations support
+	int presentFamily = -1;  //present family index - operations related to presenting images to swapchain/framebuffers - ideally the same as the graphics family
+
+	bool isComplete() { //return true if all needed queues have been found
+		return graphicsFamily >= 0 && presentFamily >= 0;
+	}
+
+};
+
 
 VkResult CreateDebugReportCallbackEXT(VkInstance instance, const VkDebugReportCallbackCreateInfoEXT *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkDebugReportCallbackEXT *pCallback) {
 	//wrapper function to call vkCreateDebugReportCallbackEXT since it's not loaded by default
@@ -99,59 +156,7 @@ public:
 
 private:
 
-	struct UniformBufferObject { //shader dlobal object
-		glm::mat4 model; //model matrix
-		glm::mat4 view; //view matrix
-		glm::mat4 proj; //projection matrix
-	};
-
-	struct Vertex { //shader vertex information
-		glm::vec3 pos;  //position vetor x, y, z for now
-		glm::vec3 color; //color vector, RBG, alpha hardcoded to 1 in shader for now
-		glm::vec2 tex;
-		//data is interleaved in memory i.e <[pos][color][tex]><[pos][color][tex]>...
-		//                                  ^-----stride-----^
-
-		static VkVertexInputBindingDescription getBindingDescription() { //generate struct describing the binding properties
-			VkVertexInputBindingDescription bindingDes = {};
-			bindingDes.binding = 0; //binding shader will look for the data buffer at
-			bindingDes.stride = sizeof(Vertex); //current size of the struct
-			bindingDes.inputRate = VK_VERTEX_INPUT_RATE_VERTEX; //advance data entry every vertex, rather than every instance
-
-			return bindingDes; //return the struct
-		}
-
-		static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions() { //generate an array of structs describing our vertex struct
-			std::array<VkVertexInputAttributeDescription, 3> attDes = {};
-
-			attDes[0].binding = 0; //binding, must match appropriate VkVertexInputBindingDescription
-			attDes[0].location = 0; //location specified in shader for i-th data member - 0:0
-			attDes[0].format = VK_FORMAT_R32G32B32_SFLOAT; //specify data vector size using color flags - two 32 bit signed floats
-			attDes[0].offset = offsetof(Vertex, pos); //offset to find pos elements <^[pos][color][tex]><^[pos][color][tex]>...
-
-			attDes[1].binding = 0; //binding, must match appropriate VkVertexInputBindingDescription
-			attDes[1].location = 1; //location specified in shader for i-th data member - 0:1
-			attDes[1].format = VK_FORMAT_R32G32B32_SFLOAT; //specify data vector size using color flags - three 32 bit signed floats
-			attDes[1].offset = offsetof(Vertex, color); //offset to find color elements <[pos]^[color][tex]><[pos]^[color][tex]>...
-
-			attDes[2].binding = 0; //binding, must match appropriate VkVertexInputBindingDescription
-			attDes[2].location = 2; //location specified in shader for i-th data member - 0:2 
-			attDes[2].format = VK_FORMAT_R32G32_SFLOAT; //specify data vector size using color flags - two 32 bit signed floats
-			attDes[2].offset = offsetof(Vertex, tex); //offset to find color elements <[pos][color]^[tex]><[pos][color]^[tex]>...
-
-			return attDes; //return the struct
-		}
-	}; 
-
-	struct QueueFamilyIndices { //struct to hold current device indexes for queue families being used
-		int graphicsFamily = -1; //graphics family index - draw related operations - implies memory transfer operations support
-		int presentFamily = -1;  //present family index - operations related to presenting images to swapchain/framebuffers - ideally the same as the graphics family
-
-		bool isComplete() { //return true if all needed queues have been found
-			return graphicsFamily >= 0 && presentFamily >= 0;
-		}
-
-	};
+	
 
 	struct SwapChainSupportDetails { //struct to hold the current SwapChain support details of our physical device
 		VkSurfaceCapabilitiesKHR capabilities; //capability list struct
