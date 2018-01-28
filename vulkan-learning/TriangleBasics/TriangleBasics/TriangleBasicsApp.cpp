@@ -1066,6 +1066,7 @@ private:
 			}
 
 			throw std::runtime_error("Failed to find supported format!");
+			return format;
 		}
 	}
 
