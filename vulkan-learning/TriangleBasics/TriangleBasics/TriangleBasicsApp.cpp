@@ -22,6 +22,10 @@
 const int WIDTH = 800; //window initial width
 const int HEIGHT = 600; //window initial height
 
+const std::string MODEL_PATH_ROOT = "models/";
+const std::string TEXTURE_PATH_ROOT = "textures/";
+
+
 VkResult CreateDebugReportCallbackEXT(VkInstance instance, const VkDebugReportCallbackCreateInfoEXT *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkDebugReportCallbackEXT *pCallback) {
 	//wrapper function to call vkCreateDebugReportCallbackEXT since it's not loaded by default
 	auto func = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugReportCallbackEXT"); //get a pointer to the function
