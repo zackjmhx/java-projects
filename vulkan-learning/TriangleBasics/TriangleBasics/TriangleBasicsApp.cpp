@@ -1110,7 +1110,7 @@ private:
 
 	void createTextureImage(const std::string fileName) {
 		int texWidth, texHeight, texChannels; //vars to hold image data
-		stbi_uc *pixels = stbi_load("textures/texture.jpg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha); //load the pixel data and force alpha channel even if missing
+		stbi_uc *pixels = stbi_load((TEXTURE_PATH_ROOT + fileName).c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha); //load the pixel data and force alpha channel even if missing
 
 		VkDeviceSize imageSize = texWidth * texHeight * 4; //pixel count * number of bytes
 
