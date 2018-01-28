@@ -1153,6 +1153,9 @@ private:
 		vkDestroyBuffer(device, stageBuff, nullptr); //destroy the staging buffer
 		vkFreeMemory(device, stageBuffMem, nullptr); //free the buffers memory
 
+#ifndef NDEBUG
+		std::cout << "Finished loading texture." << std::endl;
+#endif
 	}
 
 	void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) {
