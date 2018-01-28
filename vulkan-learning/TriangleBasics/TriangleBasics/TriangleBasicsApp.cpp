@@ -291,9 +291,11 @@ private:
 
 		createFrameBuffer();
 
-		createTextureImage("texture.jpg"); //load texture image into device memory
+		createTextureImage("chalet.jpg"); //load texture image into device memory
 		createTextureImageView(); //create a view for our texture
 		createTexureSampler();
+
+		loadModel("chalet.obj");
 
 		createVertexBuffer();
 		
