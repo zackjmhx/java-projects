@@ -33,7 +33,7 @@ const int HEIGHT = 600; //window initial height
 const std::string MODEL_PATH_ROOT = "models/";
 const std::string TEXTURE_PATH_ROOT = "textures/";
 
-struct UniformBufferObject { //shader dlobal object
+struct UniformBufferObject { //shader global object
 	glm::mat4 model; //model matrix
 	glm::mat4 view; //view matrix
 	glm::mat4 proj; //projection matrix
