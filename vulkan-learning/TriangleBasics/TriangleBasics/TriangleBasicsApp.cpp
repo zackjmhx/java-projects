@@ -1242,7 +1242,7 @@ private:
 	void createIndexBuffer() {
 		VkDeviceSize bufferSize = sizeof(vIndicies[0]) * vIndicies.size();
 
-		createStagedBuffer(bufferSize, vIndicies, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, 0, indexBuffer, indexBufferMemory);
+		createStagedBuffer(bufferSize, vIndices, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, 0, indexBuffer, indexBufferMemory);
 
 	}
 
@@ -1537,7 +1537,7 @@ private:
 
 			vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &desSet, 0, nullptr);
 
-			vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(vIndicies.size()), 1, 0, 0, 0);
+			vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(vIndices.size()), 1, 0, 0, 0);
 
 			vkCmdEndRenderPass(commandBuffers[i]);
 
