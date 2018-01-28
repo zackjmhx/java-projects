@@ -43,6 +43,7 @@ struct Vertex { //shader vertex information
 	glm::vec3 pos;  //position vetor x, y, z for now
 	glm::vec3 color; //color vector, RBG, alpha hardcoded to 1 in shader for now
 	glm::vec2 tex;
+	glm::vec3 normal;
 	//data is interleaved in memory i.e <[pos][color][tex]><[pos][color][tex]>...
 	//                                  ^-----stride-----^
 
@@ -60,18 +61,23 @@ struct Vertex { //shader vertex information
 
 		attDes[0].binding = 0; //binding, must match appropriate VkVertexInputBindingDescription
 		attDes[0].location = 0; //location specified in shader for i-th data member - 0:0
-		attDes[0].format = VK_FORMAT_R32G32B32_SFLOAT; //specify data vector size using color flags - two 32 bit signed floats
-		attDes[0].offset = offsetof(Vertex, pos); //offset to find pos elements <^[pos][color][tex]><^[pos][color][tex]>...
+		attDes[0].format = VK_FORMAT_R32G32B32_SFLOAT; //specify data vector size using color flags - three 32 bit signed floats
+		attDes[0].offset = offsetof(Vertex, pos); //offset to find pos elements <^[pos][color][tex][normal]><^[pos][color][tex]>...
 
 		attDes[1].binding = 0; //binding, must match appropriate VkVertexInputBindingDescription
 		attDes[1].location = 1; //location specified in shader for i-th data member - 0:1
 		attDes[1].format = VK_FORMAT_R32G32B32_SFLOAT; //specify data vector size using color flags - three 32 bit signed floats
-		attDes[1].offset = offsetof(Vertex, color); //offset to find color elements <[pos]^[color][tex]><[pos]^[color][tex]>...
+		attDes[1].offset = offsetof(Vertex, color); //offset to find color elements <[pos]^[color][tex][normal]><[pos]^[color][tex]>...
 
 		attDes[2].binding = 0; //binding, must match appropriate VkVertexInputBindingDescription
 		attDes[2].location = 2; //location specified in shader for i-th data member - 0:2 
 		attDes[2].format = VK_FORMAT_R32G32_SFLOAT; //specify data vector size using color flags - two 32 bit signed floats
-		attDes[2].offset = offsetof(Vertex, tex); //offset to find color elements <[pos][color]^[tex]><[pos][color]^[tex]>...
+		attDes[2].offset = offsetof(Vertex, tex); //offset to find color elements <[pos][color]^[tex][normal]><[pos][color]^[tex]>...
+
+		attDes[3].binding = 0; //binding, must match appropriate VkVertexInputBindingDescription
+		attDes[3].location = 3; //location specified in shader for i-th data member - 0:3
+		attDes[3].format = VK_FORMAT_R32G32B32_SFLOAT; //specify data vector size using color flags - three 32 bit signed float
+		attDes[3].offset = offsetof(Vertex, normal); //offset to find color elements <[pos][color][tex]^[normal]><[pos][color][tex]^[normal]>...
 
 		return attDes; //return the struct
 	}
