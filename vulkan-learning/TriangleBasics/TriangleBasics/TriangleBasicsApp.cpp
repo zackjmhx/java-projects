@@ -1211,6 +1211,7 @@ private:
 			throw std::runtime_error(err);
 
 		std::unordered_map<Vertex, uint32_t> uniqueVerticies = {};
+		int i = 0;
 
 		for (const auto &shape : shapes) {
 			for (const auto &index : shape.mesh.indices) {
