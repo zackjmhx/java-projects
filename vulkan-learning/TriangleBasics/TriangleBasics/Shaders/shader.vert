@@ -21,11 +21,7 @@ layout(binding = 0) uniform UniformBufferObject {
 } ubo;
 
 void main(){
-	//just hardcoding to test, will abstract out to the host side app later
 
-	vec3 ambient =  vec3(0.1, 0.1, 0.3);
-	vec3 dirLightInt =  vec3(0.4, 0.3, 0.8);
-	vec3 dirLightDir = normalize(vec3(1.0, -4.0, 0.0));
 
 	gl_Position = ubo.mvp *  vec4(inPosition, 1.0);
 	fragNormal = ubo.view * ubo.model * vec4(normal, 1.0);
