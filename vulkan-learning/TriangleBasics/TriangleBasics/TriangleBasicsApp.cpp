@@ -1278,7 +1278,7 @@ private:
 		for (auto &vertex : vertices) {
 			glm::normalize(vertex.normal);
 
-#ifndef NDEBUG
+#ifndef DVERBOSE
 			std::cout << vertex.normal.x << "x " << vertex.normal.y << "y " << vertex.normal.z << "z " << std::endl;
 #endif
 		}
