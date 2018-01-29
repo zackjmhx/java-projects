@@ -21,5 +21,5 @@ void main() {
 
 	vec3 lightIntense = ambient + dirLightInt * max(dot(surfaceNorm, dirLightDir), 0.0); //simple Phong lighting
 
-	outColor = texel * vec4(lightIntense, 1.0); //display the normals as color
+	outColor = vec4(texel.xyz * lightIntense, texel.a); //display the normals as color
 }
