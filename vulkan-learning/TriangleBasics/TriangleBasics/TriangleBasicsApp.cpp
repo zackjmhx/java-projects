@@ -1214,8 +1214,8 @@ private:
 		int i = 0;
 
 		for (const auto &shape : shapes) {
+			Vertex vertex[3] = {}; //stupid redefine
 			for (const auto &index : shape.mesh.indices) {
-				Vertex vertex[3] = {};
 
 				vertex[i].pos = {
 					attrib.vertices[3 * index.vertex_index + 0],
