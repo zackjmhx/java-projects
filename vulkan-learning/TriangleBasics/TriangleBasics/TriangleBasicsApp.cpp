@@ -1207,7 +1207,7 @@ private:
 		std::vector<tinyobj::material_t> materials;
 		std::string err;
 
-		if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &err, (MODEL_PATH_ROOT + fileName).c_str()))
+		if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &err, (MODEL_PATH_ROOT + fileName).c_str())) //super slow. TODO: Write threaded file loader for large models
 			throw std::runtime_error(err);
 
 		std::unordered_map<Vertex, uint32_t> uniqueVerticies = {};
@@ -1253,6 +1253,7 @@ private:
 					std::cout << "normal   " << normal.x << "x " << normal.y << "y " << normal.z << "z " << std::endl;
 #endif
 
+					//naive approach while debugging
 					vertices.at(uniqueVerticies[vertex[0]]).normal += normal;
 					vertices.at(uniqueVerticies[vertex[1]]).normal += normal;
 					vertices.at(uniqueVerticies[vertex[2]]).normal += normal;
