@@ -14,9 +14,12 @@ void main() {
 	//just hardcoding to test, will abstract out to the host side app later
 
 	vec3 ambient =  vec3(0.1, 0.1, 0.3);
-	vec3 dirLightInt =  vec3(0.4, 0.3, 0.8);
-	vec3 dirLightDir = normalize(vec3(1.0, -4.0, 0.0));
+	vec3 dirLightInt =  vec3(0.6, 0.6, 0.8);
+	vec3 dirLightDir = normalize(vec3(1.0, 4.0, -5.0));
+	vec3 surfaceNorm = normalize(fragNormal.xyz);
+	vec4 texel = texture(texSampler, fragTexCoords);
 
-	outColor = fragNormal; //display the normals as color
-	//outColor = texture(texSampler, fragTexCoords);
+	vec3 lightIntense = ambient + dirLightInt * max(dot(surfaceNorm, dirLightDir), 0.0); //simple Phong lighting
+
+	outColor = texel * vec4(lightIntense, 1.0); //display the normals as color
 }
