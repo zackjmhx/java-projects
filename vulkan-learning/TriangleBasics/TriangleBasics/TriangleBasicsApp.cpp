@@ -297,11 +297,11 @@ private:
 
 		createFrameBuffer();
 
-		createTextureImage("chalet.jpg"); //load texture image into device memory
+		createTextureImage("Ancient Ugandan.png"); //load texture image into device memory
 		createTextureImageView(); //create a view for our texture
 		createTexureSampler();
 
-		loadModel("chalet.obj");
+		loadModel("AncientUgandan.obj");
 
 		createVertexBuffer();
 		
