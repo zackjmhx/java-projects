@@ -1239,6 +1239,8 @@ private:
 
 				i++;
 
+
+				//probably should more or less never actually calculate this at load time, trying to get a deeper understanding of the procedure
 				if (i == 3) {
 					glm::vec3 v1 = vertex[1].pos - vertex[0].pos;
 					glm::vec3 v2 = vertex[2].pos - vertex[0].pos;
