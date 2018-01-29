@@ -56,8 +56,8 @@ struct Vertex { //shader vertex information
 		return bindingDes; //return the struct
 	}
 
-	static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions() { //generate an array of structs describing our vertex struct
-		std::array<VkVertexInputAttributeDescription, 3> attDes = {};
+	static std::array<VkVertexInputAttributeDescription, 4> getAttributeDescriptions() { //generate an array of structs describing our vertex struct
+		std::array<VkVertexInputAttributeDescription, 4> attDes = {};
 
 		attDes[0].binding = 0; //binding, must match appropriate VkVertexInputBindingDescription
 		attDes[0].location = 0; //location specified in shader for i-th data member - 0:0
