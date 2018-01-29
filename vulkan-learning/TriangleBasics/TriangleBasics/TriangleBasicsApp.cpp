@@ -1244,6 +1244,15 @@ private:
 					glm::vec3 v2 = vertex[2].pos - vertex[0].pos;
 					glm::vec3 normal = glm::cross(v1, v2);
 
+#ifndef NDEBUG
+					std::cout << "vertex 0 " << vertex[0].pos.x << "x " << vertex[0].pos.y << "y " << vertex[0].pos.z << "z " << std::endl;
+					std::cout << "vertex 1 " << vertex[1].pos.x << "x " << vertex[1].pos.y << "y " << vertex[1].pos.z << "z " << std::endl;
+					std::cout << "vertex 2 " << vertex[2].pos.x << "x " << vertex[2].pos.y << "y " << vertex[2].pos.z << "z " << std::endl;
+					std::cout << "line B-A " << v1.x << "x " << v1.y << "y " << v1.z << "z " << std::endl;
+					std::cout << "line C-A " << v1.x << "x " << v1.y << "y " << v1.z << "z " << std::endl;
+					std::cout << "normal   " << normal.x << "x " << normal.y << "y " << normal.z << "z " << std::endl;
+#endif
+
 					vertices.at(uniqueVerticies[vertex[0]]).normal += normal;
 					vertices.at(uniqueVerticies[vertex[1]]).normal += normal;
 					vertices.at(uniqueVerticies[vertex[2]]).normal += normal;
@@ -1255,6 +1264,7 @@ private:
 
 #ifndef NDEBUG
 		std::cout << "Finished loading model." << std::endl;
+		std::cin; //debug pause
 #endif
 		
 		for (auto &vertex : vertices) {
