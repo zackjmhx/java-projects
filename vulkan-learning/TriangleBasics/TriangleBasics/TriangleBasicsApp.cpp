@@ -1257,8 +1257,16 @@ private:
 		std::cout << "Finished loading model." << std::endl;
 #endif
 		
-		for (auto &vertex : vertices)
+		for (auto &vertex : vertices) {
 			glm::normalize(vertex.normal);
+
+#ifndef NDEBUG
+			std::cout << vertex.normal.x << "x " << vertex.normal.y << "y " << vertex.normal.z << "z " << std::endl;
+#endif
+		}
+
+
+
 	}
 
 
