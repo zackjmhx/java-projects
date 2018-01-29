@@ -1247,12 +1247,14 @@ private:
 					glm::vec3 normal = glm::cross(v1, v2);
 
 #ifndef NDEBUG
+#ifdef DVERBOSE
 					std::cout << "vertex 0 " << vertex[0].pos.x << "x " << vertex[0].pos.y << "y " << vertex[0].pos.z << "z " << std::endl;
 					std::cout << "vertex 1 " << vertex[1].pos.x << "x " << vertex[1].pos.y << "y " << vertex[1].pos.z << "z " << std::endl;
 					std::cout << "vertex 2 " << vertex[2].pos.x << "x " << vertex[2].pos.y << "y " << vertex[2].pos.z << "z " << std::endl;
 					std::cout << "line B-A " << v1.x << "x " << v1.y << "y " << v1.z << "z " << std::endl;
 					std::cout << "line C-A " << v1.x << "x " << v1.y << "y " << v1.z << "z " << std::endl;
 					std::cout << "normal   " << normal.x << "x " << normal.y << "y " << normal.z << "z " << std::endl;
+#endif
 #endif
 
 					//naive approach while debugging
@@ -1267,18 +1269,20 @@ private:
 
 #ifndef NDEBUG
 		std::cout << "Finished loading model." << std::endl;
+#ifdef DPAUSE
 		std::cin; //debug pause
+#endif
 #endif
 		
 		for (auto &vertex : vertices) {
 			glm::normalize(vertex.normal);
 
-#ifndef NDEBUG
+#ifdef DVERBOSE
 			std::cout << vertex.normal.x << "x " << vertex.normal.y << "y " << vertex.normal.z << "z " << std::endl;
 #endif
 		}
 
-#ifndef NDEBUG
+#ifdef DPAUSE
 		std::cin; //pause and ponder the broken state of the normal vectors and my life
 #endif
 
