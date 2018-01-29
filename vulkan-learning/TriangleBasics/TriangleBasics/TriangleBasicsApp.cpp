@@ -1265,7 +1265,9 @@ private:
 #endif
 		}
 
-
+#ifndef NDEBUG
+		std::cin; //pause and ponder the broken state of the normal vectors and my life
+#endif
 
 	}
 
