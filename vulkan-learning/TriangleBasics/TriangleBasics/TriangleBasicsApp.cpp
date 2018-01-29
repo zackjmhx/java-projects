@@ -1258,16 +1258,17 @@ private:
 #endif
 
 					//naive approach while debugging
-					vertices.at(uniqueVerticies[vertex[0]]).normal += normal;
-					vertices.at(uniqueVerticies[vertex[1]]).normal += normal;
-					vertices.at(uniqueVerticies[vertex[2]]).normal += normal;
+					vertices.at(uniqueVerticies[vertex[0]]).normal += 1000.0f * normal;
+					vertices.at(uniqueVerticies[vertex[1]]).normal += normal * 1000.0f;
+					vertices.at(uniqueVerticies[vertex[2]]).normal += normal * 1000.0f;
+					//normals seem abysmally small, scaling to test
 
 					i = 0;
 				}	
 			}
 		}
 
-#ifndef NDEBUG
+#ifndef DVERBOSE
 		std::cout << "Finished loading model." << std::endl;
 #ifdef DPAUSE
 		std::cin; //debug pause
@@ -1277,7 +1278,7 @@ private:
 		for (auto &vertex : vertices) {
 			glm::normalize(vertex.normal);
 
-#ifdef DVERBOSE
+#ifndef NDEBUG
 			std::cout << vertex.normal.x << "x " << vertex.normal.y << "y " << vertex.normal.z << "z " << std::endl;
 #endif
 		}
