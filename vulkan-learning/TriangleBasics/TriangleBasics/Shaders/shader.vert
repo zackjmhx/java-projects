@@ -22,7 +22,7 @@ layout(binding = 0) uniform UniformBufferObject {
 
 void main(){
 	gl_Position = ubo.mvp *  vec4(inPosition, 1.0);
-	fragNormal = normal;
+	fragNormal = view * vec4(normal, 1.0f);
 	fragColor = inColor;
 	fragTexCoord = inTexCoord;
 }
