@@ -13,9 +13,9 @@ void main() {
 
 	//just hardcoding to test, will abstract out to the host side app later
 
-	vec3 ambient =  vec3(0.1, 0.1, 0.3);
-	vec3 dirLightInt =  vec3(0.6, 0.6, 0.8);
-	vec3 dirLightDir = normalize(vec3(1.0, 4.0, -5.0));
+	vec3 ambient =  vec3(0.2, 0.2, 0.4);
+	vec3 dirLightInt =  vec3(0.5, 0.5, 0.9);
+	vec3 dirLightDir = normalize(vec3(0.0, 5.0, -4.0));
 	vec3 surfaceNorm = normalize(fragNormal.xyz);
 	vec4 texel = texture(texSampler, fragTexCoords);
 
